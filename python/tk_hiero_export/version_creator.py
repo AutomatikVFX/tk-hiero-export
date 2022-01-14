@@ -454,9 +454,16 @@ class ShotgunTranscodeExporter(
                 self.app.log_debug(
                     "Uploading quicktime to ShotGrid... (%s)" % self._quicktime_path
                 )
-                self.app.shotgun.upload(
-                    "Version", vers["id"], self._quicktime_path, "sg_uploaded_movie"
-                )
+                # When ingesting with a render farm it can happen that the quicktime
+                # is already present but in the middle of being written. This will
+                # lead to the upload failing, so we need to capture any potential errors here.
+                try:
+                    self.app.shotgun.upload(
+                        "Version", vers["id"], self._quicktime_path, "sg_uploaded_movie"
+                    )
+                except Exception:
+                    self.app.logger.exception("Error during ShotGrid Upload.")
+
                 if self._temp_quicktime:
                     shutil.rmtree(os.path.dirname(self._quicktime_path))
 
