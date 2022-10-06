@@ -516,7 +516,7 @@ class ShotgunTranscodePreset(
         CollatedShotPreset.__init__(self, self.properties())
 
         # set default values
-        self._properties["create_version"] = True
+        self._properties["create_version"] = properties.get("create_version", True)
 
         # Handle custom properties from the customize_export_ui hook.
         custom_properties = (
