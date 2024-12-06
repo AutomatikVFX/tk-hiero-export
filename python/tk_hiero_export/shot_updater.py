@@ -124,6 +124,9 @@ class ShotgunShotUpdater(
         """
         Execution payload.
         """
+        # NOTE: store shot properties for later use during version creation
+        self.app._shot_preset_properties = self._preset.properties()
+        
         # Only process actual shots... so uncollated items and hero collated items
         if self.isCollated() and not self.isHero():
             return False
