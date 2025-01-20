@@ -314,7 +314,7 @@ class ShotgunTranscodeExporter(
             task=self,
             item=item,
             data=self.app.preprocess_data,
-            fields=["sg_head_in", "sg_tail_out"],
+            fields=["sg_head_in", "sg_tail_out","sg_cut_in","sg_cut_out"],
             base_class=HieroGetShot,
         )
 
@@ -356,7 +356,7 @@ class ShotgunTranscodeExporter(
                 "code": file_name,
                 "sg_first_frame": head_in,
                 "sg_last_frame": tail_out,
-                "frame_range": "%s-%s" % (head_in, tail_out),
+                "frame_range": "%s-%s" % (head_in, tail_out)
             }
 
             if self._sg_task is not None:
