@@ -37,7 +37,7 @@ class ShotgunAudioExporterUI(ShotgunHieroObjectBase, FnAudioExportUI.AudioExport
     def __init__(self, preset):
         FnAudioExportUI.AudioExportUI.__init__(self, preset)
 
-        self._displayName = "SG Audio Export"
+        self._displayName = "PTR Audio Export"
         self._taskType = ShotgunAudioExporter
 
     def populateUI(self, widget, exportTemplate):
@@ -62,7 +62,7 @@ class ShotgunAudioExporterUI(ShotgunHieroObjectBase, FnAudioExportUI.AudioExport
 
 
 class ShotgunAudioExporter(
-    ShotgunHieroObjectBase, FnAudioExportTask.AudioExportTask, CollatingExporter
+    ShotgunHieroObjectBase, CollatingExporter, FnAudioExportTask.AudioExportTask
 ):
     """
     Create Audio object and send to Shotgun
@@ -144,7 +144,12 @@ class ShotgunAudioExporter(
         # figure out the thumbnail frame
         ##########################
         source = self._item.source()
-        self._thumbnail = source.thumbnail(source.posterFrame())
+        try:
+            self._thumbnail = source.thumbnail(source.posterFrame())
+        except RuntimeError:
+            # Nuke 16.0 issues a RuntimeError when trying to get the thumbnail
+            # RuntimeError: Layer does not exist
+            self.app.logger.error("Unable to extract thumbnail", exc_info=True)
 
         return FnAudioExportTask.AudioExportTask.startTask(self)
 
@@ -294,7 +299,9 @@ class ShotgunAudioExporter(
             args["task"] = self._sg_task
 
         # register publish
-        self.app.log_debug("Register publish in ShotGrid: %s" % str(args))
+        self.app.log_debug(
+            "Register publish in Flow Production Tracking: %s" % str(args)
+        )
         pub_data = sgtk.util.register_publish(**args)
 
         # upload thumbnail for publish
@@ -302,7 +309,7 @@ class ShotgunAudioExporter(
 
 
 class ShotgunAudioPreset(
-    ShotgunHieroObjectBase, FnAudioExportTask.AudioExportPreset, CollatedShotPreset
+    ShotgunHieroObjectBase, CollatedShotPreset, FnAudioExportTask.AudioExportPreset
 ):
     """
     Settings for the shotgun audio export step
