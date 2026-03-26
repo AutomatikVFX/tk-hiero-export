@@ -62,12 +62,12 @@ class ShotgunHieroObjectBase(object):
         # We key off of the method name since we allow for different
         # properties and custom widgets per exporter type.
         if get_method not in self._custom_property_definitions:
-            self._custom_property_definitions[
-                get_method
-            ] = self.app.execute_hook_method(
-                "hook_customize_export_ui",
-                get_method,
-                base_class=HieroCustomizeExportUI,
+            self._custom_property_definitions[get_method] = (
+                self.app.execute_hook_method(
+                    "hook_customize_export_ui",
+                    get_method,
+                    base_class=HieroCustomizeExportUI,
+                )
             )
 
         return self._custom_property_definitions[get_method]
@@ -182,7 +182,7 @@ class ShotgunHieroObjectBase(object):
             self.app.shotgun.upload_thumbnail(sg_entity["type"], sg_entity["id"], path)
         except Exception as e:
             self.app.log_info(
-                "Thumbnail for %s %s (#%s) was not refreshed in ShotGrid: %s"
+                "Thumbnail for %s %s (#%s) was not refreshed in Flow Production Tracking: %s"
                 % (sg_entity["type"], sg_entity.get("name"), sg_entity["id"], e)
             )
         finally:

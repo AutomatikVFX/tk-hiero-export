@@ -51,7 +51,7 @@ class ShotgunTranscodeExporterUI(
 
     def __init__(self, preset):
         FnTranscodeExporterUI.TranscodeExporterUI.__init__(self, preset)
-        self._displayName = "SG Transcode Images"
+        self._displayName = "PTR Transcode Images"
         self._taskType = ShotgunTranscodeExporter
 
     def create_version_changed(self, state):
@@ -74,12 +74,12 @@ class ShotgunTranscodeExporterUI(
 
         top_layout = QtGui.QVBoxLayout()
         top_layout.setContentsMargins(9, 0, 9, 0)
-        create_version_checkbox = QtGui.QCheckBox("Create SG Version", widget)
+        create_version_checkbox = QtGui.QCheckBox("Create PTR Version", widget)
         create_version_checkbox.setToolTip(
-            "Create a Version in SG for this transcode.\n\n"
+            "Create a Version in PTR for this transcode.\n\n"
             "If the output format is not a quicktime, then\n"
             "a quicktime will be created.  The quicktime will\n"
-            "be uploaded to SG as Screening Room media."
+            "be uploaded to PTR as Screening Room media."
         )
 
         create_version_checkbox.setCheckState(QtCore.Qt.Checked)
@@ -119,7 +119,7 @@ class ShotgunTranscodeExporterUI(
 
 
 class ShotgunTranscodeExporter(
-    ShotgunHieroObjectBase, FnTranscodeExporter.TranscodeExporter, CollatingExporter
+    ShotgunHieroObjectBase, CollatingExporter, FnTranscodeExporter.TranscodeExporter
 ):
     """
     Create Transcode object and send to Shotgun
@@ -189,7 +189,7 @@ class ShotgunTranscodeExporter(
 
         self._quicktime_path = os.path.join(tempfile.mkdtemp(), "preview.mov")
         self._temp_quicktime = True
-        nodeName = "SG Screening Room Media"
+        nodeName = "PTR Screening Room Media"
 
         framerate = None
         if self._sequence:
@@ -219,7 +219,7 @@ class ShotgunTranscodeExporter(
         # their Python classes out from under us, so now we're going
         # to have to handle this the ugly way, via introspecting the
         # arguments expected by the createWriteNode method.
-        arg_spec = inspect.getargspec(FnExternalRender.createWriteNode)
+        arg_spec = inspect.getfullargspec(FnExternalRender.createWriteNode)
         if "projectsettings" in arg_spec.args:
             kwargs = dict(
                 path=self._quicktime_path,
@@ -425,7 +425,7 @@ class ShotgunTranscodeExporter(
         pub_data = tank.util.register_publish(**args)
         if self._extra_publish_data is not None:
             self.app.log_debug(
-                "Updating SG %s %s"
+                "Updating PTR %s %s"
                 % (published_file_entity_type, str(self._extra_publish_data))
             )
             self.app.shotgun.update(
@@ -450,12 +450,13 @@ class ShotgunTranscodeExporter(
             else:  # == "TankPublishedFile
                 self._version_data["tank_published_file"] = pub_data
 
-            self.app.log_debug("Creating SG Version %s" % str(self._version_data))
+            self.app.log_debug("Creating PTR Version %s" % str(self._version_data))
             vers = self.app.shotgun.create("Version", self._version_data)
 
             if os.path.exists(self._quicktime_path):
                 self.app.log_debug(
-                    "Uploading quicktime to ShotGrid... (%s)" % self._quicktime_path
+                    "Uploading quicktime to Flow Production Tracking... (%s)"
+                    % self._quicktime_path
                 )
                 # When ingesting with a render farm it can happen that the quicktime
                 # is already present but in the middle of being written. This will
@@ -509,9 +510,9 @@ class ShotgunTranscodeExporter(
 
 
 class ShotgunTranscodePreset(
-    ShotgunHieroObjectBase, FnTranscodeExporter.TranscodePreset, CollatedShotPreset
+    ShotgunHieroObjectBase, CollatedShotPreset, FnTranscodeExporter.TranscodePreset
 ):
-    """Settings for the SG transcode step"""
+    """Settings for the PTR transcode step"""
 
     def __init__(self, name, properties):
         FnTranscodeExporter.TranscodePreset.__init__(self, name, properties)
