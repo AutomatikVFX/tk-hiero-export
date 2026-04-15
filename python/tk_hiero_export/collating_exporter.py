@@ -69,12 +69,17 @@ class CollatingExporter(object):
                     # Find all the effects which apply to collated items
                     from hiero.exporters import FnEffectHelpers
 
-                    (
-                        self._effects,
-                        self._annotations,
-                    ) = FnEffectHelpers.findEffectsAnnotationsForTrackItems(
-                        self._collatedItems
-                    )
+                    if self._is_hiero_v17_or_later():
+                        self._effects = FnEffectHelpers.findEffectsForTrackItems(
+                            self._collatedItems
+                        )
+                    else:
+                        (
+                            self._effects,
+                            self._annotations,
+                        ) = FnEffectHelpers.findEffectsAnnotationsForTrackItems(
+                            self._collatedItems
+                        )
 
                 # Build the sequence of collated shots
                 self._buildCollatedSequence(properties)
@@ -83,12 +88,17 @@ class CollatingExporter(object):
                     # Find the effects which apply to this item.  Note this function expects a list.
                     from hiero.exporters import FnEffectHelpers
 
-                    (
-                        self._effects,
-                        self._annotations,
-                    ) = FnEffectHelpers.findEffectsAnnotationsForTrackItems(
-                        [self._item]
-                    )
+                    if self._is_hiero_v17_or_later():
+                        self._effects = FnEffectHelpers.findEffectsForTrackItems(
+                            [self._item]
+                        )
+                    else:
+                        (
+                            self._effects,
+                            self._annotations,
+                        ) = FnEffectHelpers.findEffectsAnnotationsForTrackItems(
+                            [self._item]
+                        )
 
     def _offsetTimelineLinked(self, trackItem, offset):
         """
@@ -602,9 +612,13 @@ class CollatingExporter(object):
 
         # Copy any effects and add them to the sequence.  We don't do anything with handles here,
         # the effects just have the same timeline duration as before.
-        for subTrackItem in itertools.chain(
-            self._effects, linkedEffects, self._annotations
-        ):
+        if self._is_hiero_v17_or_later():
+            effectsChain = itertools.chain(self._effects, linkedEffects)
+        else:
+            effectsChain = itertools.chain(
+                self._effects, linkedEffects, self._annotations
+            )
+        for subTrackItem in effectsChain:
             parentTrack = subTrackItem.parentTrack()
             newTrack = newTracks[parentTrack.guid()]
             unusedNewTracks.discard(newTrack)
@@ -763,6 +777,21 @@ class CollatingExporter(object):
                 self._has_nuke = True
 
         return self._has_nuke
+
+    def _is_hiero_v17_or_later(self):
+        """
+        Return ``True`` if the current Hiero/Nuke Studio version is 17 or later.
+
+        Hiero v17+ uses ``FnEffectHelpers.findEffectsForTrackItems`` and no
+        longer returns annotations separately, whereas earlier versions use
+        ``FnEffectHelpers.findEffectsAnnotationsForTrackItems``.
+        """
+        if not hasattr(self, "_hiero_v17"):
+            try:
+                self._hiero_v17 = int(hiero.core.env.get("VersionMajor", 0)) >= 17
+            except Exception:
+                self._hiero_v17 = False
+        return self._hiero_v17
 
 
 def _clone_item(item):
