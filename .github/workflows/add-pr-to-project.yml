@@ -7,6 +7,6 @@ on:
 
 jobs:
   add-pr-to-project:
-    uses: AutomatikVFX/.github/.github/workflows/add-pr-to-project.yml@main
+    uses: AutomatikVFX/gh_actions/.github/workflows/add-pr-to-project.yml@main
     secrets:
       github-token: ${{ secrets.ADD_PR_TO_PROJECT_PAT }}
