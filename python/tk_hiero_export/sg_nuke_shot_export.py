@@ -99,11 +99,23 @@ class ShotgunNukeShotExporterUI(
             layout.addWidget(custom_widget)
 
     def toolkitPresetChanged(self, topLeft, bottomRight):
+        """
+        Store the checked toolkit write nodes in the preset's toolkitWriteNodes property.
+
+        Uses checkState() because on PySide6 item.data(CheckStateRole) returns an
+        int, which never compares equal to the QtCore.Qt.Checked enum.
+
+        :param QtCore.QModelIndex topLeft: First changed index in the model
+        :param QtCore.QModelIndex bottomRight: Last changed index in the model
+
+        :returns: None
+        :rtype: None
+        """
         self._preset.properties()["toolkitWriteNodes"] = []
         preset = self._preset.properties()["toolkitWriteNodes"]
         for row in range(0, self._toolkit_model.rowCount()):
             item = self._toolkit_model.item(row, 0)
-            if item.data(QtCore.Qt.CheckStateRole) == QtCore.Qt.Checked:
+            if item.checkState() == QtCore.Qt.Checked:
                 preset.append(item.text())
 
         self.app.log_debug("toolkitPresetChanged: %s" % preset)

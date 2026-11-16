@@ -55,7 +55,18 @@ class ShotgunTranscodeExporterUI(
         self._taskType = ShotgunTranscodeExporter
 
     def create_version_changed(self, state):
-        create_version = state == QtCore.Qt.Checked
+        """
+        Store the "Create Version" checkbox state in the preset's create_version property.
+
+        stateChanged emits an int. It is converted to QtCore.Qt.CheckState first,
+        because on PySide6 an int never compares equal to the QtCore.Qt.Checked enum.
+
+        :param int state: Check state emitted by the checkbox's stateChanged signal
+
+        :returns: None
+        :rtype: None
+        """
+        create_version = QtCore.Qt.CheckState(state) == QtCore.Qt.Checked
         self._preset._properties["create_version"] = create_version
 
     def populateUI(self, widget, exportTemplate):
